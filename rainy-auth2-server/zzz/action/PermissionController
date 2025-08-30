@@ -1,0 +1,86 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.CreatePermissionDto;
+import com.example.demo.dto.UpdatePermissionDto;
+import com.example.demo.service.PermissionService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/permission")
+@RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")   // 等价 JwtGuard
+public class PermissionController {
+
+    private final PermissionService permissionService;
+
+    /* ---------- 新增单个权限 ---------- */
+    @PostMapping
+    @PreAuthorize("@previewGuard.check()")
+    public Object create(@Validated @RequestBody CreatePermissionDto dto) {
+        return permissionService.create(dto);
+    }
+
+    /* ---------- 批量新增权限 ---------- */
+    @PostMapping("/batch")
+    @PreAuthorize("@previewGuard.check()")
+    public Object batchCreate(@Validated @RequestBody List<CreatePermissionDto> dtos) {
+        return permissionService.batchCreate(dtos);
+    }
+
+    /* ---------- 查询全部权限（列表） ---------- */
+    @GetMapping
+    public Object findAll() {
+        return permissionService.findAll();
+    }
+
+    /* ---------- 树形结构全部权限 ---------- */
+    @GetMapping("/tree")
+    public Object findAllTree() {
+        return permissionService.findAllTree();
+    }
+
+    /* ---------- 仅菜单的树形结构 ---------- */
+    @GetMapping("/menu/tree")
+    public Object findMenuTree() {
+        return permissionService.findMenuTree();
+    }
+
+    /* ---------- 单条详情 ---------- */
+    @GetMapping("/{id}")
+    public Object findOne(@PathVariable Long id) {
+        return permissionService.findOne(id);
+    }
+
+    /* ---------- 更新权限 ---------- */
+    @PatchMapping("/{id}")
+    @PreAuthorize("@previewGuard.check()")
+    public Object update(@PathVariable Long id,
+                         @Validated @RequestBody UpdatePermissionDto dto) {
+        return permissionService.update(id, dto);
+    }
+
+    /* ---------- 删除权限 ---------- */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("@previewGuard.check()")
+    public Object remove(@PathVariable Long id) {
+        permissionService.remove(id);
+        return true;
+    }
+
+    /* ---------- 根据父级 ID 查询按钮权限 ---------- */
+    @GetMapping("/button/{parentId}")
+    public Object findButton(@PathVariable Long parentId) {
+        return permissionService.findButton(parentId);
+    }
+
+    /* ---------- 校验菜单 path 是否已存在 ---------- */
+    @GetMapping("/menu/validate")
+    public Object validateMenuPath(@RequestParam("path") String path) {
+        return permissionService.validateMenuPath(path);
+    }
+}
