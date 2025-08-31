@@ -1,11 +1,15 @@
 package com.rainy.common.controller;
 
 import cn.dev33.satoken.util.SaResult;
+import com.rainy.common.condition.RoleCondition;
 import com.rainy.common.controller.vo.LoginVo;
+import com.rainy.common.controller.vo.RoleVo;
+import com.rainy.common.service.RoleService;
 import com.rainy.common.utils.JsonUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.rainy.core.common.Result;
+import com.rainy.core.common.jdbc.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +18,28 @@ import java.util.List;
 @RestController
 @RequestMapping("/role")
 public class RoleController {
+
+    @Autowired
+    private RoleService roleService;
+
+    /* ---------- 新增角色 ---------- */
+    @PostMapping("/add")
+    public Result<RoleVo> add(@RequestBody RoleVo roleVo) {
+        return Result.toSuccess(roleService.add(roleVo));
+    }
+
+    /* ---------- 修改角色 ---------- */
+    @PatchMapping("/update")
+    public Result<RoleVo> update(@RequestBody RoleVo roleVo) {
+        return Result.toSuccess(roleService.update(roleVo));
+    }
+
+    /* ---------- 新增角色 ---------- */
+    @GetMapping("/getPage")
+    public Result<Page<RoleVo>> getPage(RoleCondition roleCondition) {
+        Page<RoleVo> page = roleService.getPageByCondition(roleCondition);
+        return Result.toSuccess(page);
+    }
 
     /* ---------- 当前用户角色的权限树 ---------- */
     @GetMapping("/permissions/tree")
