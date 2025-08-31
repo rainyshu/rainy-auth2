@@ -21,7 +21,7 @@ sa-token:
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://192.168.0.52:3306/auth2?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&tinyInt1isBit=false
+    url: jdbc:mysql://192.168.0.52:3306/auth2?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&tinyInt1isBit=false
     username: root
     password: Aa123456!
     hikari:

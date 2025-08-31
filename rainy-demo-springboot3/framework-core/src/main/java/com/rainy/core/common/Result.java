@@ -56,5 +56,13 @@ public class Result<T> implements Serializable {
         result.setData(data);
         return result;
     }
+
+    public static <T> Result<T> toFail(String msg) {
+        Result<T> result = new Result<T>();
+        result.setCode(CodeBusinessException.B_FAIL);
+        result.setMsg(msg);
+        result.setData(null);
+        return result;
+    }
 }
 

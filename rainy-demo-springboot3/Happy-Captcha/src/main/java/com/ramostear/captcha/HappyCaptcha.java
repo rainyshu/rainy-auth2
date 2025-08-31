@@ -5,11 +5,10 @@ import com.ramostear.captcha.core.AnimCaptcha;
 import com.ramostear.captcha.core.Captcha;
 import com.ramostear.captcha.support.CaptchaStyle;
 import com.ramostear.captcha.support.CaptchaType;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.awt.*;
-import java.io.IOException;
 
 /**
  * @author : ramostear/树下魅狐

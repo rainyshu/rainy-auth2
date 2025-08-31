@@ -3,7 +3,6 @@ package com.ramostear.captcha;
 import com.ramostear.captcha.common.ConstArray;
 import com.ramostear.captcha.common.Fonts;
 import com.ramostear.captcha.support.CaptchaType;
-import java.util.Base64;
 
 import java.awt.*;
 import java.awt.geom.CubicCurve2D;
@@ -11,6 +10,7 @@ import java.awt.geom.QuadCurve2D;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 /**
  * @author : ramostear/树下魅狐

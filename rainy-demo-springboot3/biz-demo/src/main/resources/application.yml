@@ -3,9 +3,9 @@ server:
 spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:mysql://127.0.0.1:3306/biz_demo_001?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&tinyInt1isBit=false
+    url: jdbc:mysql://192.168.0.52:3306/biz_demo_001?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&tinyInt1isBit=false
     username: root
-    password: 123456
+    password: Aa123456!
     hikari:
       poolName: Hikari
       auto-commit: false

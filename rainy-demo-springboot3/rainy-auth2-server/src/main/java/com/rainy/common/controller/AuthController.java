@@ -1,17 +1,23 @@
 package com.rainy.common.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.util.SaResult;
+import com.rainy.common.condition.UserCondition;
 import com.rainy.common.controller.vo.LoginVo;
+import com.rainy.common.controller.vo.UserVo;
+import com.rainy.common.service.UserService;
+import com.rainy.core.common.Result;
 import com.ramostear.captcha.HappyCaptcha;
 import com.ramostear.captcha.support.CaptchaType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +27,9 @@ public class AuthController {
 
     private final Map<String, String> captcha_Cache = new ConcurrentHashMap<>();
 
+    @Autowired
+    private UserService userService;
+
     /* =============== 1. 登录 =============== */
     @PostMapping("/login")
     public Object login(@RequestBody LoginVo loginVo, HttpServletRequest request) {
@@ -29,15 +38,21 @@ public class AuthController {
         if (sessionCode == null || !sessionCode.equalsIgnoreCase(loginVo.getCaptcha())) {
             throw new RuntimeException("验证码错误");
         }
+
         // 第一步：比对前端提交的账号名称、密码
-        if("admin".equals(loginVo.getUsername()) && "123456".equals(loginVo.getPassword())) {
-            // 第二步：根据账号id，进行登录
-            StpUtil.login(10001);
-            Map<String, String> captchaMap = new HashMap<>();
-            captchaMap.put("accessToken", StpUtil.getTokenValue());
-            return SaResult.ok().setData(captchaMap);
+        UserCondition userCondition = new UserCondition();
+        userCondition.setUsername(loginVo.getUsername());
+        List<UserVo> users = userService.getListByCondition(userCondition);
+        UserVo user = CollectionUtils.isEmpty(users) ? null : users.get(0);
+        if (null == user || !user.getPassword().equals(loginVo.getPassword())) {
+            return Result.toFail("账号或者密码错误");
         }
-        return SaResult.error("登录失败");
+
+        // 第二步：根据账号id，进行登录
+        StpUtil.login(user.getId());
+        Map<String, String> captchaMap = new HashMap<>();
+        captchaMap.put("accessToken", StpUtil.getTokenValue());
+        return Result.toSuccess(captchaMap);
     }
 
     /* =============== 6. 获取验证码 =============== */

@@ -113,5 +113,7 @@ public interface CodeBusinessException {
 
     String B_SUCCESS = "000000";
 
+    String B_FAIL = "200000";
+
 }
 
