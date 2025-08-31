@@ -1,0 +1,101 @@
+package com.example.demo.entity;
+
+import com.example.demo.enums.MethodType;
+import com.example.demo.enums.PermissionType;
+import lombok.*;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "permission")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Permission {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String code;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private PermissionType type;
+
+    /* 自引用树形结构 */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    private Permission parent;
+
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Permission> children = new ArrayList<>();
+
+    /* 冗余 parent_id 字段，方便查询（可选） */
+    @Column(name = "parent_id", insertable = false, updatable = false)
+    private Long parentId;
+
+    private String path;
+    private String redirect;
+    private String icon;
+    private String component;
+    private String layout;
+
+    @Column(columnDefinition = "tinyint(1) default 1")
+    private Boolean keepAlive;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private MethodType method;
+
+    @Column(columnDefinition = "varchar(255) default ''")
+    private String description;
+
+    /** 是否展示在页面菜单 */
+    @Column(columnDefinition = "tinyint(1) default 1")
+    private Boolean show = true;
+
+    @Column(columnDefinition = "tinyint(1) default 1")
+    private Boolean enable = true;
+
+    private Integer order;
+
+    /* 与 Role 的多对多 */
+    @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Role> roles = new ArrayList<>();
+}
+
+
+CREATE TABLE permission (
+  id          bigint auto_increment primary key,
+  name        varchar(100) not null,
+  code        varchar(50)  not null unique,
+  type        enum('MENU','BUTTON','API') not null,
+  parent_id   bigint,
+  path        varchar(255),
+  redirect    varchar(255),
+  icon        varchar(255),
+  component   varchar(255),
+  layout      varchar(255),
+  keep_alive  tinyint(1) default 1,
+  method      enum('GET','POST','PUT','PATCH','DELETE'),
+  description varchar(255),
+  show        tinyint(1) default 1,
+  enable      tinyint(1) default 1,
+  `order`     int,
+  constraint fk_permission_parent
+    foreign key (parent_id) references permission(id)
+    on delete set null
+) engine = innodb;
+
+转java entity 对应jpa实体类，使用mysql自增方式

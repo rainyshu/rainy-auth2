@@ -1,0 +1,100 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.*;
+import com.example.demo.security.CurrentUser;
+import com.example.demo.security.JwtUser;
+import com.example.demo.service.RoleService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/role")
+@RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")   // JwtGuard + RoleGuard
+public class RoleController {
+
+    private final RoleService roleService;
+
+    /* ---------- 新增角色 ---------- */
+    @PostMapping
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object create(@Validated @RequestBody CreateRoleDto dto) {
+        return roleService.create(dto);
+    }
+
+    /* ---------- 列表（不分页） ---------- */
+    @GetMapping
+    public Object findAll(@Validated @ModelAttribute GetRolesDto query) {
+        return roleService.findAll(query);
+    }
+
+    /* ---------- 分页查询 ---------- */
+    @GetMapping("/page")
+    public Object findPagination(@Validated @ModelAttribute QueryRoleDto queryDto) {
+        return roleService.findPagination(queryDto);
+    }
+
+    /* ---------- 查询某个角色的权限 ---------- */
+    @GetMapping("/permissions")
+    public Object findRolePermissions(@RequestParam("id") Long id) {
+        return roleService.findRolePermissions(id);
+    }
+
+    /* ---------- 单条详情 ---------- */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public Object findOne(@PathVariable Long id) {
+        return roleService.findOne(id);
+    }
+
+    /* ---------- 修改角色 ---------- */
+    @PatchMapping("/{id}")
+    @PreAuthorize("(hasRole('SUPER_ADMIN') or hasRole('SYS_ADMIN') or hasRole('ROLE_PMS')) " +
+                  "and @previewGuard.check()")
+    public Object update(@PathVariable Long id,
+                         @Validated @RequestBody UpdateRoleDto dto) {
+        return roleService.update(id, dto);
+    }
+
+    /* ---------- 删除角色 ---------- */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object remove(@PathVariable Long id) {
+        roleService.remove(id);
+        return true;
+    }
+
+    /* ---------- 给角色批量添加权限 ---------- */
+    @PostMapping("/permissions/add")
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object addRolePermissions(@Validated @RequestBody AddRolePermissionsDto dto) {
+        roleService.addRolePermissions(dto);
+        return true;
+    }
+
+    /* ---------- 当前用户角色的权限树 ---------- */
+    @GetMapping("/permissions/tree")
+    public Object findRolePermissionsTree(@CurrentUser JwtUser user) {
+        return roleService.findRolePermissionsTree(user.getCurrentRoleCode());
+    }
+
+    /* ---------- 给角色分配用户 ---------- */
+    @PatchMapping("/users/add/{roleId}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object addRoleUsers(@PathVariable Long roleId,
+                               @Validated @RequestBody AddRoleUsersDto dto) {
+        roleService.addRoleUsers(roleId, dto);
+        return true;
+    }
+
+    /* ---------- 从角色中移除用户 ---------- */
+    @PatchMapping("/users/remove/{roleId}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object removeRoleUsers(@PathVariable Long roleId,
+                                  @Validated @RequestBody AddRoleUsersDto dto) {
+        roleService.removeRoleUsers(roleId, dto);
+        return true;
+    }
+}

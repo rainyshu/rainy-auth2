@@ -1,0 +1,102 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.ChangePasswordDto;
+import com.example.demo.dto.LoginDto;
+import com.example.demo.dto.RegisterUserDto;
+import com.example.demo.exception.BizException;
+import com.example.demo.exception.ErrorCodeEnum;
+import com.example.demo.security.JwtUser;
+import com.example.demo.service.AuthService;
+import com.example.demo.service.UserService;
+import com.example.demo.util.CaptchaUtil;
+import com.example.demo.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+    private final UserService userService;
+    private final CaptchaUtil captchaUtil;
+
+    /* =============== 1. 登录 =============== */
+    @PostMapping("/login")
+    public Object login(@Valid @RequestBody LoginDto dto,
+                        HttpServletRequest request) {
+
+        // 预览环境快速登录
+        if (Boolean.parseBoolean(System.getenv("IS_PREVIEW")) && dto.isQuick()) {
+            return authService.login(SecurityUtil.currentUser(), null);
+        }
+
+        // 验证码校验
+        String sessionCode = (String) request.getSession().getAttribute("code");
+        if (sessionCode == null ||
+            !sessionCode.equalsIgnoreCase(dto.getCaptcha())) {
+            throw new BizException(ErrorCodeEnum.ERR_10003);
+        }
+        return authService.login(SecurityUtil.currentUser(), sessionCode);
+    }
+
+    /* =============== 2. 注册 =============== */
+    @PostMapping("/register")
+    @PreAuthorize("@previewGuard.check()")   // 自定义 PreviewGuard
+    public Object register(@Valid @RequestBody RegisterUserDto dto) {
+        return userService.create(dto);
+    }
+
+    /* =============== 3. 刷新 token =============== */
+    @GetMapping("/refresh/token")
+    @PreAuthorize("isAuthenticated()")
+    public Object refreshToken(@AuthenticationPrincipal JwtUser user) {
+        return authService.generateToken(user);
+    }
+
+    /* =============== 4. 切换角色 =============== */
+    @PostMapping("/current-role/switch/{roleCode}")
+    @PreAuthorize("isAuthenticated()")
+    public Object switchRole(@AuthenticationPrincipal JwtUser user,
+                             @PathVariable String roleCode) {
+        return authService.switchCurrentRole(user, roleCode);
+    }
+
+    /* =============== 5. 退出登录 =============== */
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
+    public Object logout(@AuthenticationPrincipal JwtUser user) {
+        authService.logout(user);
+        return true;
+    }
+
+    /* =============== 6. 获取验证码 =============== */
+    @GetMapping("/captcha")
+    public void createCaptcha(HttpServletRequest request,
+                              HttpServletResponse response) throws IOException {
+        String code = captchaUtil.createAndWrite(request, response);
+        request.getSession().setAttribute("code", code);
+    }
+
+    /* =============== 7. 修改密码 =============== */
+    @PostMapping("/password")
+    @PreAuthorize("isAuthenticated() and @previewGuard.check()")
+    public Object changePassword(@AuthenticationPrincipal JwtUser user,
+                                 @Valid @RequestBody ChangePasswordDto dto) {
+        boolean ok = authService.validateUser(user.getUsername(), dto.getOldPassword());
+        if (!ok) {
+            throw new BizException(ErrorCodeEnum.ERR_10004);
+        }
+        userService.resetPassword(user.getId(), dto.getNewPassword());
+        authService.logout(user);
+        return true;
+    }
+}

@@ -1,0 +1,67 @@
+package com.example.demo.entity;
+
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "user")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, length = 50, nullable = false)
+    private String username;
+
+    @Column(nullable = false, insertable = true, updatable = true)
+    private String password;
+
+    @Column(columnDefinition = "tinyint(1) default 1")
+    private Boolean enable = true;
+
+    /** 创建时间 */
+    @CreationTimestamp
+    @Column(name = "create_time", updatable = false)
+    private LocalDateTime createTime;
+
+    /** 更新时间 */
+    @UpdateTimestamp
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
+
+    /* 一对一：用户 ↔ 个人资料（关闭外键约束） */
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @PrimaryKeyJoinColumn
+    private Profile profile;
+
+    /* 多对多：用户 ↔ 角色（关闭外键约束） */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_role",
+        joinColumns = @JoinColumn(name = "user_id", foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT)),
+        inverseJoinColumns = @JoinColumn(name = "role_id", foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
+    )
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
+}
+
+CREATE TABLE user (
+  id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+  username    VARCHAR(50) NOT NULL UNIQUE,
+  password    VARCHAR(255) NOT NULL,
+  enable      TINYINT(1) DEFAULT 1,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE = InnoDB;

@@ -1,0 +1,107 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.*;
+import com.example.demo.exception.BizException;
+import com.example.demo.exception.ErrorCodeEnum;
+import com.example.demo.security.CurrentUser;
+import com.example.demo.security.JwtUser;
+import com.example.demo.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/user")
+@RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")          // 等价 JwtGuard + RoleGuard
+public class UserController {
+
+    private final UserService userService;
+
+    /* ========= 新增用户 ========= */
+    @PostMapping
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object addUser(@Validated @RequestBody CreateUserDto dto) {
+        return userService.create(dto);
+    }
+
+    /* ========= 分页/条件查询用户 ========= */
+    @GetMapping
+    public Object getAllUsers(@Validated GetUserDto query) {
+        return userService.findAll(query);
+    }
+
+    /* ========= 删除用户 ========= */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object deleteUser(@PathVariable Long id,
+                             @CurrentUser JwtUser current) {
+        if (current.getUserId().equals(id))
+            throw new BizException(ErrorCodeEnum.ERR_11006, "非法操作，不能删除自己！");
+        userService.remove(id);
+        return true;
+    }
+
+    /* ========= 管理员修改用户 ========= */
+    @PatchMapping("/{id}")
+    @PreAuthorize("(hasRole('SUPER_ADMIN') or hasRole('SYS_ADMIN')) and @previewGuard.check()")
+    public Object updateUser(@PathVariable Long id,
+                             @Validated @RequestBody UpdateUserDto dto) {
+        return userService.update(id, dto);
+    }
+
+    /* ========= 用户自己修改资料 ========= */
+    @PatchMapping("/profile/{id}")
+    @PreAuthorize("@previewGuard.check()")
+    public Object updateProfile(@Validated @RequestBody UpdateProfileDto dto,
+                                @PathVariable Long id,
+                                @CurrentUser JwtUser current) {
+        if (!current.getUserId().equals(id))
+            throw new BizException(ErrorCodeEnum.ERR_11004, "越权操作，用户资料只能本人修改！");
+        return userService.updateProfile(id, dto);
+    }
+
+    /* ========= 当前登录用户详情 ========= */
+    @GetMapping("/detail")
+    public Object getUserInfo(@CurrentUser JwtUser current) {
+        return userService.findUserDetail(current.getUserId(), current.getCurrentRoleCode());
+    }
+
+    /* ========= 根据用户名查询 ========= */
+    @GetMapping("/{username}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public Object findByUsername(@PathVariable String username) {
+        return userService.findByUsername(username);
+    }
+
+    /* ========= 查询某用户 profile ========= */
+    @GetMapping("/profile/{userId}")
+    public Object getUserProfile(@PathVariable Long userId,
+                                 @CurrentUser JwtUser current) {
+        if (current.getUserId().equals(userId) ||
+                current.getRoles().contains("SUPER_ADMIN")) {
+            return userService.findUserProfile(userId);
+        }
+        throw new BizException(ErrorCodeEnum.ERR_11003);
+    }
+
+    /* ========= 给用户赋角色 ========= */
+    @PostMapping("/roles/add/{userId}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object addRoles(@PathVariable Long userId,
+                           @Validated @RequestBody AddUserRolesDto dto) {
+        return userService.addRoles(userId, dto.getRoleIds());
+    }
+
+    /* ========= 管理员重置密码 ========= */
+    @PatchMapping("/password/reset/{userId}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') and @previewGuard.check()")
+    public Object resetPassword(@PathVariable Long userId,
+                                @Validated @RequestBody UpdatePasswordDto dto) {
+        userService.resetPassword(userId, dto.getPassword());
+        return true;
+    }
+}
