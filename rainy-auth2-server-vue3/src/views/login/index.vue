@@ -68,8 +68,8 @@
         />
         
         <div class="mt-20 flex items-center">
-          <n-button class="ml-32 h-40 flex-1 rounded-5 text-16" type="primary" :loading="loading" @click="handleLogin()" >登录</n-button>
-          <n-button class="h-40 flex-1 rounded-5 text-16" type="primary" ghost @click="quickLogin()">一键体验</n-button>
+          <n-button class="h-40 flex-1 rounded-5 text-16" type="primary" :loading="loading" @click="handleLogin()" >登录</n-button>
+          <n-button class="ml-32 h-40 flex-1 rounded-5 text-16" type="primary" ghost @click="register()">注册</n-button>
         </div>
       </div>
     </div>
@@ -106,10 +106,10 @@ if (localLoginInfo) {
 }
 initCaptcha()
 
-function quickLogin() {
-  loginInfo.value.username = 'admin'
-  loginInfo.value.password = '123456'
-  handleLogin(true)
+function register() {
+  const { username, password, captcha } = loginInfo.value
+  const { data } = api.register({ username, password: password.toString() })
+  $message.success('登录成功')
 }
 
 const isRemember = useStorage('isRemember', true)
@@ -138,7 +138,6 @@ async function handleLogin(isQuick) {
       initCaptcha()
     }
     $message.destroy('login')
-    console.error(error)
   }
   loading.value = false
 }

@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store'
 import { resolveResError } from './helpers'
 
 export function setupInterceptors(axiosInstance) {
-  const SUCCESS_CODES = [0, 200]
+  const SUCCESS_CODES = [0, 200, "000000"]
   function resResolve(response) {
     const { data, status, config, statusText, headers } = response
     if (headers['content-type']?.includes('json')) {

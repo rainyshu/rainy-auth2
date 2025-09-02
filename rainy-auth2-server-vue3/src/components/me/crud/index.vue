@@ -134,7 +134,7 @@ async function handleQuery() {
       ...props.queryItems,
       ...paginationParams,
     })
-    tableData.value = data?.pageData || data
+    tableData.value = data?.pageData ||data?.data || data
     pagination.itemCount = data.total ?? data.length
     if (pagination.itemCount && !tableData.value.length && pagination.page > 1) {
       // 如果当前页数据为空，且总条数不为0，则返回上一页数据
