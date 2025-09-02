@@ -13,8 +13,11 @@ public class CommonExceptionHandler {
 
     public Result<Object> exceptionHandler(Exception exception) {
         Result<Object> resultVo = new Result<Object>();
-        if (exception instanceof BaseRuntimeException) {
-            BaseRuntimeException baseRuntimeException = (BaseRuntimeException)exception;
+        if (exception instanceof ValidRuntimeException) {
+            resultVo.setCode(CodeBusinessException.B_VALID_ERROR);
+            resultVo.setMsg(exception.getMessage());
+            resultVo.setData(null);
+        } else if (exception instanceof BaseRuntimeException baseRuntimeException) {
             resultVo.setCode(baseRuntimeException.getCode());
             resultVo.setMsg(baseRuntimeException.getDesc());
             resultVo.setData(null);

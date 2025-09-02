@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '0.0.0.0',
       port: 10002,
-      open: false,
+      open: true,
       proxy: {
         '/api': {
           target: VITE_PROXY_TARGET,

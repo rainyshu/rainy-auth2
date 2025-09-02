@@ -90,6 +90,9 @@ public abstract class BaseDaoImpl<E extends BizEntity> implements IBaseDao<E>, S
         if (condition.getPageNo() < 1) {
             condition.setPageNo(1);
         }
+        for (Specification<E> sp : list) {
+            specification = specification.and(sp);
+        }
         List<Sort.Order> orders = getOrders(condition);
         PageRequest pageRequest = PageRequest.of(condition.getPageNo() - 1, condition.getPageSize(), Sort.by(orders));
         org.springframework.data.domain.Page<E> dbPage = baseJpaRepository.findAll(specification, pageRequest);
@@ -145,11 +148,15 @@ public abstract class BaseDaoImpl<E extends BizEntity> implements IBaseDao<E>, S
      */
     private <C extends JdbcCondition> List<Specification<E>> getSpecification(C condition, Class<E> clazz) throws Exception {
         List<Specification<E>> list = new ArrayList<>();
+        // 1.固定条件：isDeleted = 0
+        list.add((root, query, cb) -> cb.equal(root.get("isDeleted"), Constants.IS_DELETED_FALSE));
+        //2.参数
         List<QueryParam> queryParams = null == condition.getQueryParams() ? new ArrayList<>() : condition.getQueryParams();
         for (QueryParam queryParam : queryParams) {
             Specification<E> sp = getPredicateByQueryParam(queryParam);
             list.add(sp);
         }
+        //3.匹配字段
         List<Field> matchField = filterField(condition, clazz);
         for (Field field : matchField) {
             field.setAccessible(true);
@@ -164,7 +171,6 @@ public abstract class BaseDaoImpl<E extends BizEntity> implements IBaseDao<E>, S
                 }
             });
         }
-
         return list;
     }
 

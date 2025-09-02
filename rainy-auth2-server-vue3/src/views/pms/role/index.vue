@@ -116,8 +116,8 @@ const { modalRef, modalFormRef, modalAction, modalForm, handleAdd, handleDelete,
   })
 
 const columns = [
-  { title: '角色名', key: 'name' },
   { title: '角色编码', key: 'code' },
+  { title: '角色名', key: 'name' },
   {
     title: '状态',
     key: 'enable',

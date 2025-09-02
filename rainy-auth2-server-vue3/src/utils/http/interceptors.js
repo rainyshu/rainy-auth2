@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store'
 import { resolveResError } from './helpers'
 
 export function setupInterceptors(axiosInstance) {
-  const SUCCESS_CODES = [0, 200]
+  const SUCCESS_CODES = [0, 200, '000000']
   function resResolve(response) {
     const { data, status, config, statusText, headers } = response
     if (headers['content-type']?.includes('json')) {
@@ -15,7 +15,7 @@ export function setupInterceptors(axiosInstance) {
       const needTip = config?.needTip !== false
 
       // 根据code处理对应的操作，并返回处理后的message
-      const message = resolveResError(code, data?.message ?? statusText, needTip)
+      const message = resolveResError(code, data?.msg ?? statusText, needTip)
 
       return Promise.reject({ code, message, error: data ?? response })
     }

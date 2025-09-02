@@ -51,11 +51,7 @@ public class JdbcCondition extends Condition {
     }
 
     public Integer getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(Integer isDeleted) {
-        this.isDeleted = isDeleted;
+        return 0;
     }
 
     public List<QueryParam> getQueryParams() {

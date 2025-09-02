@@ -39,6 +39,12 @@ public interface IBaseService<DTO extends BaseDto> {
     DTO delete(DTO dto);
 
     /**
+     * 逻辑删除
+     * @param dto 参数，id值
+     */
+    void deleteLogic(DTO dto);
+
+    /**
      * 更新
      * @param dto 参数
      * @return 返回
@@ -51,5 +57,7 @@ public interface IBaseService<DTO extends BaseDto> {
      * @return 返回值
      */
     DTO getById(Long id);
+
+    void valid(DTO dto);
 }
 

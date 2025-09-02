@@ -34,7 +34,15 @@ public class RoleController {
         return Result.toSuccess(roleService.update(roleVo));
     }
 
-    /* ---------- 新增角色 ---------- */
+    /* ---------- 删除角色 ---------- */
+    @DeleteMapping("/{id}")
+    public Result<Boolean> remove(@PathVariable("id") Long id) {
+        RoleVo roleVo = roleService.getById(id);
+        roleService.deleteLogic(roleVo);
+        return Result.toSuccess(Boolean.TRUE);
+    }
+
+    /* ---------- 查询角色 ---------- */
     @GetMapping("/getPage")
     public Result<Page<RoleVo>> getPage(RoleCondition roleCondition) {
         Page<RoleVo> page = roleService.getPageByCondition(roleCondition);

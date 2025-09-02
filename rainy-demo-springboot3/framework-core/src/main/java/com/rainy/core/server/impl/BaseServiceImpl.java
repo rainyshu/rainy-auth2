@@ -1,6 +1,7 @@
 package com.rainy.core.server.impl;
 
 import com.rainy.core.common.BaseDto;
+import com.rainy.core.common.Constants;
 import com.rainy.core.common.jdbc.JdbcCondition;
 import com.rainy.core.common.jdbc.Page;
 import com.rainy.core.entity.BaseEntity;
@@ -40,12 +41,14 @@ public abstract class BaseServiceImpl<E extends BaseEntity, DTO extends BaseDto>
     @Override
     public DTO add(DTO dto) {
         logger.info("BaseServiceImpl add entry:{}", JsonObjectUtils.objToStr(dto));
+        valid(dto);
         return add(dto, entityClazz);
     }
 
     @Override
     public DTO update(DTO dto) {
         logger.info("BaseServiceImpl update entry:{}", JsonObjectUtils.objToStr(dto));
+        valid(dto);
         return update(dto, entityClazz);
     }
 
@@ -119,6 +122,9 @@ public abstract class BaseServiceImpl<E extends BaseEntity, DTO extends BaseDto>
         this.dtoClass = (Class<DTO>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[1];
     }
 
+    @Override
+    public void valid(DTO dto) {}
+
     protected E toEntity(DTO dto) {
         E entity = null;
         try {
@@ -163,6 +169,12 @@ public abstract class BaseServiceImpl<E extends BaseEntity, DTO extends BaseDto>
             list.add(toDto(entity));
         }
         return list;
+    }
+
+    public void deleteLogic(DTO dto) {
+        DTO db = getById(dto.getId());
+        db.setIsDeleted(Constants.IS_DELETED_TRUE);
+        baseDao.update(toEntity(db));
     }
 }
 
