@@ -2,11 +2,11 @@
 import { request } from '@/utils'
 
 export default {
-  create: data => request.post('/user', data),
-  read: (params = {}) => request.get('/user', { params }),
-  update: data => request.patch(`/user/${data.id}`, data),
+  create: data => request.post('/user/add', data),
+  read: (params = {}) => request.get('/user/getPage', { params }),
+  update: data => request.patch(`/user/update`, data),
   delete: id => request.delete(`/user/${id}`),
-  resetPwd: (id, data) => request.patch(`/user/password/reset/${id}`, data),
+  resetPwd: (id, data) => request.patch(`/user/password/reset`, data),
 
-  getAllRoles: () => request.get('/role?enable=1'),
+  getAllRoles: () => request.get('/role/getList?enable=1'),
 }

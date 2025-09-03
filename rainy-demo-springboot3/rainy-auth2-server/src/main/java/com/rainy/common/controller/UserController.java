@@ -1,11 +1,15 @@
 package com.rainy.common.controller;
 
 import cn.dev33.satoken.util.SaResult;
+import com.rainy.common.condition.UserCondition;
 import com.rainy.common.controller.vo.LoginVo;
+import com.rainy.common.controller.vo.UserVo;
+import com.rainy.common.service.UserService;
 import com.rainy.common.utils.JsonUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.rainy.core.common.Result;
+import com.rainy.core.common.jdbc.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +17,43 @@ import java.util.Map;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    /* ========= 新增用户 ========= */
+    @PostMapping("/add")
+    public Result<UserVo> add(@RequestBody UserVo userVo) {
+        return Result.toSuccess(userService.add(userVo));
+    }
+
+    /* ---------- 修改角色 ---------- */
+    @PatchMapping("/update")
+    public Result<UserVo> update(@RequestBody UserVo userVo) {
+        return Result.toSuccess(userService.update(userVo));
+    }
+
+    /* ---------- 删除角色 ---------- */
+    @DeleteMapping("/{id}")
+    public Result<Boolean> remove(@PathVariable("id") Long id) {
+        UserVo userVo = userService.getById(id);
+        userService.deleteLogic(userVo);
+        return Result.toSuccess(Boolean.TRUE);
+    }
+
+    /* ========= 分页/条件查询用户 ========= */
+    @GetMapping("/getPage")
+    public Result<Page<UserVo>> getPage(UserCondition condition) {
+        Page<UserVo> page = userService.getPageByCondition(condition);
+        return Result.toSuccess(page);
+    }
+
+    /* ========= 管理员重置密码 ========= */
+    @PatchMapping("/password/reset")
+    public Result<Boolean> resetPassword(@RequestBody UserVo dto) {
+        userService.resetPassword(dto.getId(), dto.getPassword());
+        return Result.toSuccess(Boolean.TRUE);
+    }
 
     /* ========= 当前登录用户详情 ========= */
     @GetMapping("/detail")

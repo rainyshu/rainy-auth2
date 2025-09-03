@@ -8,7 +8,7 @@ public class RoleCondition extends JdbcCondition {
 
     private String name;
 
-    private Integer enable;
+    private Boolean enable;
 
     public String getCode() {
         return code;
@@ -26,11 +26,11 @@ public class RoleCondition extends JdbcCondition {
         this.name = name;
     }
 
-    public Integer getEnable() {
+    public Boolean getEnable() {
         return enable;
     }
 
-    public void setEnable(Integer enable) {
+    public void setEnable(Boolean enable) {
         this.enable = enable;
     }
 }

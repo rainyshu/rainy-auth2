@@ -17,6 +17,9 @@ public class UserEntity extends BizEntity {
     @Column(nullable = false, insertable = true, updatable = true)
     private String password;
 
+    @Column(columnDefinition = "tinyint(1) default 1")
+    private Boolean enable;
+
     public String getUsername() {
         return username;
     }
@@ -31,5 +34,13 @@ public class UserEntity extends BizEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
     }
 }

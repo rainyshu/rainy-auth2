@@ -42,6 +42,12 @@ public class RoleController {
         return Result.toSuccess(Boolean.TRUE);
     }
 
+    /* ---------- 列表（不分页） ---------- */
+    @GetMapping("/getList")
+    public Object findAll(RoleCondition roleCondition) {
+        return Result.toSuccess(roleService.getListByCondition(roleCondition));
+    }
+
     /* ---------- 查询角色 ---------- */
     @GetMapping("/getPage")
     public Result<Page<RoleVo>> getPage(RoleCondition roleCondition) {
